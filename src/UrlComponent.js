@@ -10,6 +10,7 @@ import { del } from './cadence/transaction/delete';
 import { update } from './cadence/transaction/update';
 import { current } from './cadence/script/current';
 import { Bar } from "react-chartjs-2";
+import { claim } from './cadence/transaction/claim';
 import { BarElement,  CategoryScale,Chart as ChartJS,Legend, LinearScale,Title, Tooltip } from "chart.js";
 
 ChartJS.register(
@@ -57,6 +58,28 @@ const UrlComponent = ({ user, url }) => {
     console.log(transactionId)
     
   }
+
+  const claimReward = async () => {
+    try {
+      const transactionId = await fcl.send([
+        fcl.transaction(claim),
+        fcl.args([
+          fcl.arg(0x292b0c4a1d0f19a8, fcl.t.Address),
+          fcl.arg(user.addr, fcl.t.Address),
+          fcl.arg(Reward, fcl.t.UFix64),
+        ]),
+        fcl.payer(fcl.authz),
+        fcl.proposer(fcl.authz),
+        fcl.authorizations([fcl.authz]),
+        fcl.limit(9999)
+      ]).then(fcl.decode);
+      
+      console.log('Reward claimed:', transactionId);
+    } catch (error) {
+      console.error('Error claiming reward:', error);
+    }
+  };
+  
 
   const calculateDifferenceInDays = () => {
     const created = new Date(Current);
@@ -114,7 +137,7 @@ const UrlComponent = ({ user, url }) => {
 
   useEffect(() => {
     fetchDataForUrl();
-    
+
   }, []);
   return (
     <div>
@@ -123,6 +146,7 @@ const UrlComponent = ({ user, url }) => {
       <p>Total Days: {Days}</p>
       <p>Status {Array}</p>
       <p> Reward : {Reward}</p>
+      {Reward > 0 && <button onClick={claimReward}>Claim Reward</button>}
       <p> Task Created on: {Current}</p>
       {Array && Array.length > 0 ? (
         <Bar
@@ -140,7 +164,6 @@ const UrlComponent = ({ user, url }) => {
       ) : (
         <p>No data available for the bar chart.</p>
       )}
-      <button>Claim Reward</button>
       <button onClick={()=>upd()}>Update todays hours</button>
       <button onClick={()=>dele()}>Delete Task</button>
       {/* Display other data specific to the URL */}
