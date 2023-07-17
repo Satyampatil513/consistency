@@ -1,7 +1,9 @@
 {
 	"contracts": {
+		"ConsisToken": "consistoken.cdc",
 		"consistency": "consistency.cdc",
-		"consistency2": "consistency.cdc"
+		"consistency2": "consistency.cdc",
+		"consistify": "consistency.cdc"
 	},
 	"networks": {
 		"emulator": "127.0.0.1:3569",

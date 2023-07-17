@@ -1,8 +1,9 @@
 import logo from './logo.svg';
 import './App.css';
 import * as fcl from '@onflow/fcl'
-import React,{useState} from 'react'
-
+// import React,{useState} from 'react'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { create } from './cadence/transaction/create';
 import { showUrls } from './cadence/script/showurls';
 import { array } from './cadence/script/showarray';
@@ -11,6 +12,8 @@ import { target } from './cadence/script/target';
 import { reward } from './cadence/script/reward';
 import { current } from './cadence/script/current';
 import { update } from './cadence/transaction/update';
+import UrlComponent from './UrlComponent'; 
+
 
 // import { BarGraph } from './support/graph';
 // 0x292b0c4a1d0f19a8
@@ -27,6 +30,7 @@ function App() {
   const [Array,setArray] = useState();
   const [Current,setCurrent] = useState();
   const [Reward,setReward] = useState();
+  const date = new Date().toLocaleDateString();
   const [temp, setTemp] = useState({
     days: 0, // Set initial value for 'days'
     hour: 0,
@@ -38,6 +42,8 @@ function App() {
   const logIn = () => {
     fcl.authenticate();
     fcl.currentUser().subscribe(setUser);
+    showurl();
+
   }
   const handleSubmit = (event) => {
     // event.preventDefault(); // Prevent form submission
@@ -54,7 +60,7 @@ function App() {
   const createAcc = async () => {
     const transactionId = await fcl.send([
       fcl.transaction(create),
-      fcl.args([fcl.arg(parseInt(temp.days),fcl.t.Int),fcl.arg(parseInt(temp.hour),fcl.t.Int),fcl.arg(user.addr,fcl.t.Address),fcl.arg(temp.url,fcl.t.String)]),
+      fcl.args([fcl.arg(parseInt(temp.days),fcl.t.Int),fcl.arg(parseInt(temp.hour),fcl.t.Int),fcl.arg(user.addr,fcl.t.Address),fcl.arg(temp.url,fcl.t.String),fcl.arg(date,fcl.t.String)]),
       fcl.payer(fcl.authz),
       fcl.proposer(fcl.authz),
       fcl.authorizations([fcl.authz]),
@@ -75,74 +81,35 @@ function App() {
     console.log(transactionId)
     
   }
-  const showDays = async () =>{
-    console.log(user.addr, temp.url)
-    // const array1 = await fcl.send([
-    //   fcl.script(array), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    // ]).then(fcl.decode)
 
-    // setArray(array1)
-    // console.log(array1)
-    const reward1 = await fcl.send([
-      fcl.script(days), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    ]).then(fcl.decode)
 
-    setDays(reward1)
-    console.log(reward1)
-
-    // const day1 = await fcl.send([
-    //   fcl.script(days), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    // ]).then(fcl.decode)
-
-    // setDays(day1)
-    // console.log(day1)
-  }
-  const showurl = async () =>{
-    console.log(user.addr)
+  const showurl = async () => {
+    if (!user || !user.addr) {
+      // User is not logged in or user.addr is not available yet
+      return;
+    }
+  
+    console.log(user.addr);
     const result = await fcl.send([
       fcl.script(showUrls), fcl.args([fcl.arg(user.addr, fcl.t.Address)])
-    ]).then(fcl.decode)
+    ]).then(fcl.decode);
+  
+    seturls(result);
+    console.log(result);
+  };
+  const recieve = () => {
+    axios.get('http://localhost:3001/api/sendtofront')
+      .then((response) => console.log(response.data))
+      .catch((error) => console.error(error));
+  };
 
-    seturls(result)
-    console.log(result)
-  }
-  const showtarget = async () =>{
-    console.log(user.addr, temp.url)
-    const result = await fcl.send([
-      fcl.script(target), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    ]).then(fcl.decode)
+  useEffect(() => {
+    recieve();
+ 
 
-    setTarget(result)
-    console.log(result)
-  }
-  const showarray = async () =>{
-    console.log(user.addr, temp.url)
-    const result = await fcl.send([
-      fcl.script(array), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    ]).then(fcl.decode)
-
-    setArray(result)
-    console.log(result)
-  }
-  const showcurrent = async () =>{
-    console.log(user.addr, temp.url)
-    const result = await fcl.send([
-      fcl.script(current), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    ]).then(fcl.decode)
-
-    setCurrent(result)
-    console.log(result)
-  }
-  const showreward = async () =>{
-    console.log(user.addr, temp.url)
-    const result = await fcl.send([
-      fcl.script(reward), fcl.args([fcl.arg(user.addr, fcl.t.Address),fcl.arg(temp.url, fcl.t.String)])
-    ]).then(fcl.decode)
-
-    setReward(result)
-    console.log(result)
-  }
-
+    
+  }, []);
+  
 
 return (
     <div className="App">
@@ -174,13 +141,13 @@ return (
   onChange={(event) => setTemp({ ...temp, url: event.target.value })}
 /></label>
         <br></br>
+        {urls && urls.map((url, index) => (
+        <UrlComponent key={index} user={user} url={url} />
+      ))}
+        
         <button onClick={()=>handleSubmit()}>Submit</button>
-        <button onClick={()=>showurl()}>Get Urls</button>
-        <button onClick={()=>showDays()}>Total no of Days</button>
-        <button onClick={()=>showtarget()}> Get Target</button>
-        <button onClick={()=>showarray()}> get array of particular url</button>
-        <button onClick={()=>showcurrent()}> show Current Day</button>
-        <button onClick={()=>showreward()}> show Reward</button>
+
+
         <br></br>
         <label>Update todays Value<input
   type="number"
@@ -196,6 +163,7 @@ return (
   value={temp.url}
   onChange={(event) => setTemp({ ...temp, url: event.target.value })}
 /></label>
+{/* <button onClick={sendDataToServer}>Add New Data</button> */}
 <h3>Target Hour: {Target ? Target : 0}</h3>
 <h3>Target Day: {Days ? Days : 0}</h3>
 <h3>Current Array: {Array ? Array : []}</h3>

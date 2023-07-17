@@ -1,13 +1,13 @@
-pub contract consistency2 {
+pub contract consistify {
 
     pub struct Variables {
         pub var noOfDays: Int
         pub var dataArray: [Int]
         pub var target: Int
-        pub var currentDay: Int
+        pub var currentDay: String
         pub var reward: Int
 
-        init(val: Int, tar: Int) {
+        init(val: Int, tar: Int, current: String) {
             self.reward = 0
             self.noOfDays = val
             var a = 0;
@@ -17,12 +17,11 @@ pub contract consistency2 {
                 a = a + 1
             }
             self.target = tar
-            self.currentDay = 0
+            self.currentDay = current
         }
 
-        pub fun sendData(val: Int): Int {
-            self.dataArray[self.currentDay] = val
-            self.currentDay = self.currentDay + 1
+        pub fun sendData(val: Int,day: Int): Int {
+            self.dataArray[day] = val
             var a = 0
             while a < self.noOfDays {
                 if self.dataArray[a] < self.target {
@@ -41,17 +40,26 @@ pub contract consistency2 {
         self.accountVariables = {}
     }
 
-    pub fun createAcc(account: Address, url: String, v: Int, t: Int) {
+    pub fun createAcc(account: Address, url: String, v: Int, t: Int, current: String) {
         if var map2 = self.accountVariables[account] {
-            map2[url] = Variables(val: v, tar: t)
+            map2[url] = Variables(val: v, tar: t, current: current)
             self.accountVariables[account] = map2
         } else {
-            self.accountVariables[account] = {url: Variables(val: v, tar: t)}
+            self.accountVariables[account] = {url: Variables(val: v, tar: t, current: current)}
         }
     }
+    pub fun delete(account: Address, url: String){
+         if var map2 = self.accountVariables[account] {
+            map2.remove(key: url)
+            self.accountVariables[account] = map2
+        } 
+    }
 
-    pub fun appendValue(account: Address, url: String, value: Int) {
-      self.accountVariables[account]![url]!.sendData(val: value)
+    pub fun appendValue(account: Address, url: String, value: Int, day: Int) {
+        if var map2 = self.accountVariables[account] {
+            map2[url]?.sendData(val: value,day: day)
+            self.accountVariables[account] = map2
+        } 
     }
 
     pub fun show(account: Address): {String: Variables}? {
