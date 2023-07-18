@@ -1,12 +1,12 @@
 export const claim = `
-import ConsisToken from 0x292b0c4a1d0f19a8
+import ConsisToken2 from 0x5ac7c03ddd8bf0d0
 
-transaction(sender: Address, recipient: Address, amount: UFix64) {
+transaction(sender: Address, recipient: Address, amount: Int) {
 
-    let senderVaultRef: &ConsisToken.Vault{ConsisToken.Provider}
+    let senderVaultRef: &ConsisToken2.Vault{ConsisToken2.Provider}
 
     prepare(acct: AuthAccount) {
-        self.senderVaultRef = acct.borrow<&ConsisToken.Vault{ConsisToken.Provider}>(from: /storage/CadenceFungibleTokenTutorialVault)
+        self.senderVaultRef = acct.borrow<&ConsisToken2.Vault{ConsisToken2.Provider}>(from: /storage/CadenceFungibleTokenTutorialVault)
             ?? panic("Could not borrow a reference to the sender's vault")
     }
 
@@ -16,7 +16,7 @@ transaction(sender: Address, recipient: Address, amount: UFix64) {
 
         // Get the recipient's Receiver reference to their vault
         let recipientRef = getAccount(recipient)
-            .getCapability<&{ConsisToken.Receiver}>(
+            .getCapability<&{ConsisToken2.Receiver}>(
                 /public/CadenceFungibleTokenTutorialReceiver
             )
             .borrow()

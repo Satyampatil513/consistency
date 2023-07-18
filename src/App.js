@@ -12,6 +12,8 @@ import { target } from './cadence/script/target';
 import { reward } from './cadence/script/reward';
 import { current } from './cadence/script/current';
 import { update } from './cadence/transaction/update';
+import { createacc } from './cadence/transaction/createAcc';
+import { setup } from './cadence/transaction/setupAcc';
 import UrlComponent from './UrlComponent'; 
 
 
@@ -69,6 +71,30 @@ function App() {
     console.log(transactionId)
     
   }
+  const setup2 = async () => {
+    const transactionId = await fcl.send([
+      fcl.transaction(setup),
+      fcl.args(),
+      fcl.payer(fcl.authz),
+      fcl.proposer(fcl.authz),
+      fcl.authorizations([fcl.authz]),
+      fcl.limit(9999)
+    ]).then(fcl.decode)
+    console.log(transactionId)
+    
+  }
+  const creater = async () => {
+    const transactionId = await fcl.send([
+      fcl.transaction(createacc),
+      fcl.args(),
+      fcl.payer(fcl.authz),
+      fcl.proposer(fcl.authz),
+      fcl.authorizations([fcl.authz]),
+      fcl.limit(9999)
+    ]).then(fcl.decode)
+    console.log(transactionId)
+    
+  }
   const updateVal = async () => {
     const transactionId = await fcl.send([
       fcl.transaction(update),
@@ -115,6 +141,8 @@ return (
     <div className="App">
       <h1>Earn being consistent</h1>
       <button onClick={()=>logIn()}>Login kr bhai pehle</button>
+      <button onClick={()=>creater()}>Create Acc</button>
+      <button onClick={()=>setup2()}>Setup Acc</button>
 
       <h1>Earn being consistent</h1>
       <h3>Your Address: {user && user.addr? user.addr : ''}</h3>

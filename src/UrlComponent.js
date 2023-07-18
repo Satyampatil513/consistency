@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as fcl from '@onflow/fcl';
 // import BarGraph from './Histogram';
 
@@ -64,9 +64,9 @@ const UrlComponent = ({ user, url }) => {
       const transactionId = await fcl.send([
         fcl.transaction(claim),
         fcl.args([
-          fcl.arg(0x292b0c4a1d0f19a8, fcl.t.Address),
+          fcl.arg('0x5ac7c03ddd8bf0d0', fcl.t.Address),
           fcl.arg(user.addr, fcl.t.Address),
-          fcl.arg(Reward, fcl.t.UFix64),
+          fcl.arg(Reward, fcl.t.Int),
         ]),
         fcl.payer(fcl.authz),
         fcl.proposer(fcl.authz),
@@ -79,7 +79,7 @@ const UrlComponent = ({ user, url }) => {
       console.error('Error claiming reward:', error);
     }
   };
-  
+  const barChartRef = useRef(null);
 
   const calculateDifferenceInDays = () => {
     const created = new Date(Current);
@@ -135,9 +135,12 @@ const UrlComponent = ({ user, url }) => {
     }
   };
 
+
   useEffect(() => {
     fetchDataForUrl();
-
+    if (barChartRef.current) {
+      barChartRef.current.resize(3,4); // Step 3: Call resize after rendering
+    }
   }, []);
   return (
     <div>
@@ -150,6 +153,7 @@ const UrlComponent = ({ user, url }) => {
       <p> Task Created on: {Current}</p>
       {Array && Array.length > 0 ? (
         <Bar
+          ref={barChartRef} // Step 2: Attach the reference to the Bar component
           data={{
             labels: Array.map((_, index) => index + 1),
             datasets: [
