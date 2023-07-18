@@ -29,9 +29,10 @@ app.post('/receive-data/:id', (req, res) => {
     const data = req.body;
     console.log(`Received data from Chrome extension for user with ID ${userId}:`, data);
     time = data;
-    // app.ws('/websocket/:id', (ws, req) => {
-    //     ws.send(JSON.stringify(data));
-    // });
+    app.ws(`/timetrack/${userId}`, (ws, req) => {
+        ws.send(JSON.stringify(data));
+        console.log(data,'send to frontend');
+    });
     res.status(200).json(data);
 });
 

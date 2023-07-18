@@ -22,7 +22,7 @@ Title,
 Tooltip
 );
 
-const UrlComponent = ({ user, url }) => {
+const UrlComponent = ({ user, url ,time}) => {
   const [Days, setDays] = useState();
   const [Target, setTarget] = useState();
   const [Array,setArray] = useState();
@@ -30,7 +30,28 @@ const UrlComponent = ({ user, url }) => {
   const [Reward,setReward] = useState();
   const [diff, setDiff] = useState();
   const [Status,setStatus] = useState();
-
+  console.log(url,time);
+  const barChartOptions = {
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+      },
+    },
+    layout: {
+      padding: {
+        left: 5,
+        right: 5,
+        top: 5,
+        bottom: 5,
+      },
+    },
+    maintainAspectRatio: false, // This property will prevent the chart from maintaining the aspect ratio, allowing you to manually set the width and height.
+    responsive: false, // This property will prevent the chart from being responsive to its container.
+    aspectRatio: 1, // Set the aspect ratio to 1 to enforce a square-shaped chart.
+    width: 200, // Set the width of the chart to 200 pixels.
+    height: 200, // Set the height of the chart to 200 pixels.
+  };
 
   const dele = async () => {
     const transactionId = await fcl.send([
@@ -49,7 +70,7 @@ const UrlComponent = ({ user, url }) => {
     setDiff(calculateDifferenceInDays());
     const transactionId = await fcl.send([
       fcl.transaction(update),
-      fcl.args([fcl.arg(7,fcl.t.Int),fcl.arg(user.addr,fcl.t.Address),fcl.arg(url,fcl.t.String),fcl.arg(parseInt(diff),fcl.t.Int)]),
+      fcl.args([fcl.arg(parseInt(time),fcl.t.Int),fcl.arg(user.addr,fcl.t.Address),fcl.arg(url,fcl.t.String),fcl.arg(parseInt(diff),fcl.t.Int)]),
       fcl.payer(fcl.authz),
       fcl.proposer(fcl.authz),
       fcl.authorizations([fcl.authz]),
@@ -153,7 +174,7 @@ const UrlComponent = ({ user, url }) => {
       <p> Task Created on: {Current}</p>
       {Array && Array.length > 0 ? (
         <Bar
-          ref={barChartRef} // Step 2: Attach the reference to the Bar component
+          ref={barChartRef}
           data={{
             labels: Array.map((_, index) => index + 1),
             datasets: [
@@ -161,9 +182,10 @@ const UrlComponent = ({ user, url }) => {
                 label: 'Your Daily updates',
                 data: Array,
                 backgroundColor: 'green',
-              }
+              },
             ],
           }}
+          options={barChartOptions} // Attach the options to the Bar component
         />
       ) : (
         <p>No data available for the bar chart.</p>
