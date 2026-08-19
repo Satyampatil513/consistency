@@ -1,49 +1,65 @@
-# Getting Started with Create React App
+# Consistify
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**🏆 Winner, Cognizance '24** (IIT Roorkee's flagship tech fest)
 
-## Available Scripts
+A dApp that puts your money where your habits are. Set a daily target, lock it to your Flow wallet, and log your progress each day — hit the target every day for the full streak and a smart contract pays out the reward. Miss a day and you get nothing. No app, no friend group, no willpower required — just an immutable contract enforcing the deal you made with yourself.
 
-In the project directory, you can run:
+## How it works
 
-### `npm start`
+1. **Connect your wallet** via Flow Client Library (FCL) — no signup, no backend auth.
+2. **Create a target**: pick a URL/habit identifier, a number of days, an hourly target, and lock it on-chain.
+3. **Log progress daily**: submit today's value against the target.
+4. **Get paid automatically**: the contract checks every logged day against the target — if every single day cleared the bar, it releases the reward. One bad day and the streak (and the payout) is void.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+All of this state — targets, daily logs, current streak day, reward — is tracked per-account, per-habit, directly in the smart contract on Flow. There's no database to trust; the chain is the source of truth.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Tech stack
 
-### `npm test`
+- **Smart contracts**: [Cadence](https://developers.flow.com/cadence) on [Flow](https://flow.com) — `contracts/consistency.cdc` holds the core streak-tracking logic (`createAcc`, `appendValue`, `show`); `contracts/ConsisToken.cdc` is the fungible-token contract behind the reward payout.
+- **Frontend**: React + [`@onflow/fcl`](https://developers.flow.com/tools/clients/fcl-js) for wallet auth and transaction/script execution, [Chart.js](https://www.chartjs.org/) for visualizing progress.
+- **Network**: deployed and tested against Flow Testnet.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Project layout
 
-### `npm run build`
+```
+contracts/                     Cadence contracts (streak logic + token)
+  consistency.cdc
+  ConsisToken.cdc
+  flow.json                    Contract/account/network config for the Flow CLI
+src/
+  App.js                       Main UI — connect wallet, create target, log/view progress
+  cadence/
+    transaction/                Cadence transactions (create target, update daily value)
+    script/                     Cadence scripts (read target, streak, reward, urls)
+  support/graph.js               Chart.js progress visualization
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Getting started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Prerequisites
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Node.js and npm
+- [Flow CLI](https://developers.flow.com/tools/flow-cli/install) (`flow init`, `flow deploy`)
+- A Flow wallet (e.g. [Blocto](https://blocto.io) or the [Flow Dev Wallet](https://developers.flow.com/tools/flow-dev-wallet) for local testing)
 
-### `npm run eject`
+### Run the contracts
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+cd contracts
+flow init          # sets up local emulator config if you don't already have flow.json
+flow emulator start
+flow deploy         # deploy consistency.cdc and ConsisToken.cdc to the emulator/testnet
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Update `contracts/flow.json` with your own account address/key before deploying to testnet or mainnet — don't reuse the sample account in this repo.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Run the app
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm install
+npm start
+```
 
-## Learn More
+Opens at [http://localhost:3000](http://localhost:3000). The app is preconfigured (in `src/App.js`) to talk to Flow Testnet and the Flow FCL Discovery wallet UI — update the contract address there if you deploy your own instance of the contracts.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-##Initialize flow Blockchain
-`flow init`
+Other scripts: `npm test` (test runner), `npm run build` (production build).
